@@ -290,6 +290,18 @@ mod tests {
     }
 
     #[test]
+    fn test_invalid_radix() {
+        type U8 = Uint<8, 1>;
+
+        assert_eq!(U8::from_str_radix("0", 0), Err(ParseError::InvalidRadix(0)));
+        assert_eq!(U8::from_str_radix("0", 1), Err(ParseError::InvalidRadix(1)));
+        assert_eq!(
+            U8::from_str_radix("0", 65),
+            Err(ParseError::InvalidRadix(65))
+        );
+    }
+
+    #[test]
     fn test_from_str_radix_slow() {
         type U8 = Uint<8, 1>;
 
