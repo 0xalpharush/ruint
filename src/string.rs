@@ -98,13 +98,14 @@ impl<const BITS: usize, const LIMBS: usize> Uint<BITS, LIMBS> {
     #[inline]
     pub const fn from_str_radix(src: &str, radix: u64) -> Result<Self, ParseError> {
         match radix {
+            0 | 1 | 65.. => Err(ParseError::InvalidRadix(radix)),
+
             // Specialize for the common cases.
             2 => Self::from_str_radix_pow2(src, 2),
             8 => Self::from_str_radix_pow2(src, 8),
             10 => Self::from_str_radix_chunked(src, 10),
             16 => Self::from_str_radix_pow2(src, 16),
 
-            65.. => Err(ParseError::InvalidRadix(radix)),
             37.. => Self::from_str_radix_slow(src, radix),
             r if r.is_power_of_two() => Self::from_str_radix_pow2(src, radix),
             _ => Self::from_str_radix_chunked(src, radix),
