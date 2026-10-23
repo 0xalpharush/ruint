@@ -113,7 +113,9 @@ impl<const BITS: usize, const LIMBS: usize> Uint<BITS, LIMBS> {
     #[inline]
     #[must_use]
     pub fn log10(self) -> usize {
-        self.log(Self::from(10))
+        // Delegating keeps the `BITS < 4` case, where `10` does not fit, out of
+        // `log`.
+        self.checked_log10().expect("log10 of zero")
     }
 
     /// Returns the base 2 logarithm of the number, rounded down.
@@ -124,7 +126,9 @@ impl<const BITS: usize, const LIMBS: usize> Uint<BITS, LIMBS> {
     #[inline]
     #[must_use]
     pub fn log2(self) -> usize {
-        self.log(Self::from(2))
+        // Delegating keeps the `BITS < 2` case, where `2` does not fit, out of
+        // `log`.
+        self.checked_log2().expect("log2 of zero")
     }
 
     /// Double precision logarithm.
@@ -213,6 +217,24 @@ mod tests {
         // BITS == 4: 10 fits, so the normal path is taken and boundaries hold.
         assert_eq!(Uint::<4, 1>::from(9u64).checked_log10(), Some(0));
         assert_eq!(Uint::<4, 1>::from(15u64).checked_log10(), Some(1));
+    }
+
+    #[test]
+    fn test_log_tiny_bits() {
+        // The panicking variants must only panic on zero, not when the base
+        // constant (2 or 10) is too large for the bit-width.
+
+        // BITS < 2: the type cannot represent 2.
+        assert_eq!(Uint::<1, 1>::from(1u64).log2(), 0);
+
+        // BITS < 4: the type cannot represent 10.
+        assert_eq!(Uint::<1, 1>::from(1u64).log10(), 0);
+        assert_eq!(Uint::<2, 1>::from(3u64).log10(), 0);
+        assert_eq!(Uint::<3, 1>::from(7u64).log10(), 0);
+
+        // BITS == 4: 10 fits, so the normal path is taken.
+        assert_eq!(Uint::<4, 1>::from(9u64).log10(), 0);
+        assert_eq!(Uint::<4, 1>::from(15u64).log10(), 1);
     }
 
     #[test]
