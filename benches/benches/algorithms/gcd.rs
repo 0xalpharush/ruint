@@ -33,7 +33,10 @@ fn bench_apply<const BITS: usize, const LIMBS: usize>(criterion: &mut Criterion)
         criterion,
         &format!("algorithms/gcd/matrix/apply/{BITS}"),
         input::<Uint<BITS, LIMBS>>().prop_map(|(a, b)| (Matrix::from(a, b), a, b)),
-        |(m, mut a, mut b)| m.apply(&mut a, &mut b),
+        |(m, mut a, mut b)| {
+            m.apply(&mut a, &mut b);
+            (a, b)
+        },
     );
 }
 
