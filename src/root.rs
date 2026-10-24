@@ -69,13 +69,15 @@ impl<const BITS: usize, const LIMBS: usize> Uint<BITS, LIMBS> {
                 // Stop when we hit fix point or stop decreasing.
                 (_, Ordering::Equal) | (true, Ordering::Greater) => break result,
 
-                // When `degree` is high and the initial guess is less than or equal to the
-                // (small) true result, it takes a long time to converge. Example:
+                // When `degree` is high and the initial guess is less than or
+                // equal to the (small) true result, it takes a long time to
+                // converge. Example:
                 // 0x215f07147d573ef203e1f268ab1516d3f294619db820c5dfd0b334e4d06320b7_U256.
-                // root(196) takes 5918 iterations to converge from the initial guess of `2`.
-                // to the final result of `2`. This is because after the first iteration
-                // it jumps to `1533576856264507`. To fix this we cap the increase at `2x`.
-                // Once `result` exceeds the true result, it will converge downwards.
+                // root(196) takes 5918 iterations to converge from the initial
+                // guess of `2`. to the final result of `2`. This is because
+                // after the first iteration it jumps to `1533576856264507`. To
+                // fix this we cap the increase at `2x`. Once `result` exceeds
+                // the true result, it will converge downwards.
                 (false, Ordering::Greater) => result = min(iter, result.saturating_shl(1)),
 
                 // Converging downwards.
